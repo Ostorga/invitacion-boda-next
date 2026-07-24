@@ -1,21 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f2e9e2;
-  --foreground: #3f2528;
-  --wedding-primary: #75162d;
-  --wedding-secondary: #f2d9a0;
-  --wedding-surface: #fffaf6;
-  --wedding-muted: #7b6466;
+  --wedding-beige: #f9f2ec;
+  --wedding-terracotta: #d1663c;
+  --wedding-brown: #96331a;
+  --background: var(--wedding-beige);
+  --foreground: var(--wedding-brown);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-wedding-primary: var(--wedding-primary);
-  --color-wedding-secondary: var(--wedding-secondary);
-  --color-wedding-surface: var(--wedding-surface);
-  --color-wedding-muted: var(--wedding-muted);
+  --color-wedding-beige: var(--wedding-beige);
+  --color-wedding-terracotta: var(--wedding-terracotta);
+  --color-wedding-brown: var(--wedding-brown);
   --font-sans: var(--font-geist-sans);
   --font-display: Georgia, "Times New Roman", serif;
 }
@@ -41,7 +39,7 @@ body {
 }
 
 .eyebrow {
-  color: var(--wedding-primary);
+  color: var(--wedding-brown);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.28em;
@@ -57,9 +55,19 @@ body {
   margin-top: 0.75rem;
 }
 
-@keyframes monogram-float {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-10px) rotate(2deg); }
+@keyframes monogram-from-left {
+  from { opacity: 0; transform: translateX(-2.5rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes monogram-from-right {
+  from { opacity: 0; transform: translateX(2.5rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes monogram-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes closing-pulse {
@@ -67,9 +75,27 @@ body {
   50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.04); }
 }
 
-.monogram-orbit {
-  animation: monogram-float 6s ease-in-out infinite;
-  box-shadow: 0 0 0 18px color-mix(in srgb, var(--wedding-secondary) 18%, transparent);
+.monogram-letter-left,
+.monogram-letter-right,
+.monogram-ampersand,
+.monogram-frame {
+  opacity: 0;
+}
+
+.monogram-visible .monogram-letter-left {
+  animation: monogram-from-left 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.monogram-visible .monogram-letter-right {
+  animation: monogram-from-right 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.monogram-visible .monogram-ampersand {
+  animation: monogram-fade 0.7s ease 0.45s forwards;
+}
+
+.monogram-visible .monogram-frame {
+  animation: monogram-fade 0.8s ease 0.75s forwards;
 }
 
 .closing-heart {
@@ -78,6 +104,13 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .monogram-orbit,
+  .monogram-letter-left,
+  .monogram-letter-right,
+  .monogram-ampersand,
+  .monogram-frame,
   .closing-heart { animation: none; }
+  .monogram-letter-left,
+  .monogram-letter-right,
+  .monogram-ampersand,
+  .monogram-frame { opacity: 1; transform: none; }
 }
