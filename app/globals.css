@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f2e9e2;
+  --foreground: #3f2528;
+  --wedding-primary: #75162d;
+  --wedding-secondary: #f2d9a0;
+  --wedding-surface: #fffaf6;
+  --wedding-muted: #7b6466;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-wedding-primary: var(--wedding-primary);
+  --color-wedding-secondary: var(--wedding-secondary);
+  --color-wedding-surface: var(--wedding-surface);
+  --color-wedding-muted: var(--wedding-muted);
+  --font-sans: var(--font-geist-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
