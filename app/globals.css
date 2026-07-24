@@ -17,6 +17,7 @@
   --color-wedding-surface: var(--wedding-surface);
   --color-wedding-muted: var(--wedding-muted);
   --font-sans: var(--font-geist-sans);
+  --font-display: Georgia, "Times New Roman", serif;
 }
 
 * {
@@ -32,4 +33,51 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+.eyebrow {
+  color: var(--wedding-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 4.25rem);
+  font-weight: 400;
+  line-height: 1;
+  margin-top: 0.75rem;
+}
+
+@keyframes monogram-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+@keyframes closing-pulse {
+  0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(0.92); }
+  50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.04); }
+}
+
+.monogram-orbit {
+  animation: monogram-float 6s ease-in-out infinite;
+  box-shadow: 0 0 0 18px color-mix(in srgb, var(--wedding-secondary) 18%, transparent);
+}
+
+.closing-heart {
+  animation: closing-pulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .monogram-orbit,
+  .closing-heart { animation: none; }
 }

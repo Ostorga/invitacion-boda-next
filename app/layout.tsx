@@ -8,8 +8,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Nuestra boda",
-  description: "Acompáñanos a celebrar nuestro matrimonio.",
+  title: "Oscar y Damaris — Nuestra boda",
+  description: "Acompáñanos a celebrar el matrimonio de Oscar y Damaris.",
   other: {
     "codex-preview": "development",
   },
