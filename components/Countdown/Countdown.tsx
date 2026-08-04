@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { wedding } from "@/data/wedding";
+import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
+import TerracottaPhotoSection from "@/components/TerracottaPhotoSection/TerracottaPhotoSection";
 
 type TimeRemaining = {
   days: number;
@@ -9,6 +11,9 @@ type TimeRemaining = {
   minutes: number;
   seconds: number;
 };
+
+const WEDDING_DATE_ISO = "2026-12-19T16:00:00-06:00";
+const WEDDING_TIME = new Date(WEDDING_DATE_ISO).getTime();
 
 const units: Array<{ key: keyof TimeRemaining; label: string }> = [
   { key: "days", label: "Días" },
@@ -18,9 +23,13 @@ const units: Array<{ key: keyof TimeRemaining; label: string }> = [
 ];
 
 function getTimeRemaining(): TimeRemaining {
+  if (!Number.isFinite(WEDDING_TIME)) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
+
   const difference = Math.max(
     0,
-    Date.parse(wedding.date.dateTimeIso) - Date.now(),
+    WEDDING_TIME - Date.now(),
   );
 
   return {
@@ -42,23 +51,26 @@ export default function Countdown() {
   }, []);
 
   return (
-    <section
-      className="bg-wedding-brown px-5 py-20 text-center text-white sm:py-24"
+    <TerracottaPhotoSection
+      id="cuenta-regresiva"
+      className="px-5 py-20 text-center text-white sm:py-24"
       aria-labelledby="countdown-title"
     >
+      <RevealOnScroll>
       <p className="eyebrow !text-wedding-beige">El gran día se acerca</p>
       <h2 id="countdown-title" className="section-title !text-white">
         Faltan...
       </h2>
+      </RevealOnScroll>
       <div
         className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5"
         role="timer"
         aria-live="off"
         aria-label={`Tiempo restante para la boda de ${wedding.couple.displayName}`}
       >
-        {units.map(({ key, label }) => (
+        {units.map(({ key, label }, index) => (
+          <RevealOnScroll key={key} delay={index * 0.1}>
           <div
-            key={key}
             className="rounded-2xl border border-wedding-terracotta/70 bg-white/5 px-3 py-7 backdrop-blur-sm"
           >
             <span className="font-display block text-5xl tabular-nums text-wedding-beige sm:text-6xl">
@@ -68,11 +80,19 @@ export default function Countdown() {
               {label}
             </span>
           </div>
+          </RevealOnScroll>
         ))}
       </div>
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {remaining
+          ? `${remaining.days} días para la boda de ${wedding.couple.displayName}`
+          : "Calculando el tiempo restante para la boda"}
+      </p>
+      <RevealOnScroll delay={0.2}>
       <p className="mt-9 font-serif text-xl italic text-white/80">
         «Pronto seremos uno»
       </p>
-    </section>
+      </RevealOnScroll>
+    </TerracottaPhotoSection>
   );
 }

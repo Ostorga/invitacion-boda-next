@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { StoryChapter } from "@/data/wedding";
 import { wedding } from "@/data/wedding";
+import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
 
 function StoryCard({
   chapter,
@@ -15,6 +16,7 @@ function StoryCard({
   const contentId = `story-${chapter.year}-content`;
 
   return (
+    <RevealOnScroll delay={(index % 4) * 0.1}>
     <article className="relative grid pl-14 md:grid-cols-2 md:gap-16 md:pl-0">
       <span className="absolute left-0 top-7 z-10 grid h-10 w-10 place-items-center rounded-full border border-wedding-terracotta bg-background text-xs font-semibold text-wedding-brown md:left-1/2 md:-translate-x-1/2">
         {chapter.year}
@@ -46,6 +48,7 @@ function StoryCard({
         </button>
       </div>
     </article>
+    </RevealOnScroll>
   );
 }
 
@@ -53,6 +56,7 @@ export default function OurStory() {
   return (
     <section id="historia" className="px-6 py-20 sm:py-28">
       <div className="mx-auto max-w-5xl">
+        <RevealOnScroll>
         <header className="mx-auto max-w-2xl text-center">
           <p className="eyebrow">El camino hasta aquí</p>
           <h2 className="section-title">Nuestra historia</h2>
@@ -60,6 +64,7 @@ export default function OurStory() {
             Cada momento nos trajo un paso más cerca del otro.
           </p>
         </header>
+        </RevealOnScroll>
         <div className="relative mt-14 space-y-8 before:absolute before:bottom-4 before:left-[1.15rem] before:top-4 before:w-px before:bg-wedding-terracotta md:before:left-1/2">
           {wedding.story.map((chapter, index) => (
             <StoryCard key={chapter.year} chapter={chapter} index={index} />

@@ -1,4 +1,5 @@
 import { wedding } from "@/data/wedding";
+import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
 
 export default function WeddingDetails() {
   return (
@@ -7,6 +8,7 @@ export default function WeddingDetails() {
       className="bg-wedding-beige px-6 py-20 sm:py-28"
     >
       <div className="mx-auto max-w-5xl">
+        <RevealOnScroll>
         <header className="text-center">
           <p className="eyebrow">Los esperamos</p>
           <h2 className="section-title">El gran día</h2>
@@ -14,10 +16,11 @@ export default function WeddingDetails() {
             Dos momentos únicos para celebrar juntos.
           </p>
         </header>
+        </RevealOnScroll>
         <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {wedding.events.map((event) => (
+          {wedding.events.map((event, index) => (
+            <RevealOnScroll key={event.title} delay={index * 0.1}>
             <article
-              key={event.title}
               className="rounded-[2rem] border border-wedding-terracotta/60 bg-white p-8 text-center shadow-[0_18px_60px_rgba(150,51,26,0.08)] sm:p-10"
             >
               <span
@@ -69,6 +72,7 @@ export default function WeddingDetails() {
                 </ul>
               </div>
             </article>
+            </RevealOnScroll>
           ))}
         </div>
       </div>

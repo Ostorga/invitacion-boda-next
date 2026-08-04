@@ -9,6 +9,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("http://localhost:3000"),
   title: `${wedding.couple.displayName} — Nuestra boda`,
   description: `Acompáñanos a celebrar la boda de ${wedding.couple.displayName} el ${wedding.date.display} a las ${wedding.date.time}.`,
   applicationName: "Invitación de boda",
@@ -55,6 +56,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link
+          rel="preload"
+          as="image"
+          href={wedding.hero.image}
+          type="image/webp"
+          fetchPriority="high"
+        />
+      </head>
       <body className={`${geistSans.variable} antialiased`}>{children}</body>
     </html>
   );

@@ -1,4 +1,5 @@
 import { wedding } from "@/data/wedding";
+import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
 
 export default function Gallery() {
   return (
@@ -7,6 +8,7 @@ export default function Gallery() {
       className="bg-wedding-beige px-6 py-20 sm:py-28"
     >
       <div className="mx-auto max-w-6xl">
+        <RevealOnScroll>
         <header className="text-center">
           <p className="eyebrow">Momentos nuestros</p>
           <h2 className="section-title">Galería</h2>
@@ -15,10 +17,11 @@ export default function Gallery() {
             favoritos.
           </p>
         </header>
+        </RevealOnScroll>
         <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {wedding.gallery.map((photo) => (
+          {wedding.gallery.map((photo, index) => (
+            <RevealOnScroll key={photo.id} delay={(index % 4) * 0.1}>
             <div
-              key={photo.id}
               className="relative aspect-[3/4] overflow-hidden rounded-[1.75rem] border border-wedding-terracotta/50 bg-white"
             >
               <div className="absolute inset-4 grid place-items-center rounded-[1.3rem] border border-dashed border-wedding-brown/25 text-center">
@@ -32,6 +35,7 @@ export default function Gallery() {
                 </div>
               </div>
             </div>
+            </RevealOnScroll>
           ))}
         </div>
       </div>

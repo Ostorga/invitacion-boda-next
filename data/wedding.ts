@@ -32,7 +32,7 @@ export const wedding = {
     futureEndpoint: "/api/rsvp",
   },
   hero: {
-    image: "/images/hero.jpg",
+    image: "/images/hero.webp",
     invitation: "Tienen el honor de invitarles a la celebración de su matrimonio",
     quote: "Dos almas que se reconocen en la eternidad y deciden caminar juntas hacia ella.",
   },

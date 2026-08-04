@@ -55,6 +55,50 @@ body {
   margin-top: 0.75rem;
 }
 
+.reveal-on-scroll-pending {
+  opacity: 0;
+  transform: translateY(72px);
+}
+
+.reveal-on-scroll-pending.reveal-on-scroll-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s),
+    transform 0.95s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s);
+}
+
+.hero-photo-background {
+  background-attachment: scroll;
+  background-position: 52% 35%;
+}
+
+.terracotta-photo-background {
+  display: block;
+  background-position: 52% 35%;
+}
+
+.terracotta-photo-section {
+  background-color: transparent;
+}
+
+@media (min-width: 48rem) and (hover: hover) and (pointer: fine) {
+  .hero-photo-background {
+    background-attachment: fixed;
+    background-position: center 38%;
+  }
+
+  .terracotta-photo-background {
+    display: block;
+    background-attachment: fixed;
+    background-position: center 38%;
+  }
+
+  .terracotta-photo-section {
+    background-color: var(--wedding-terracotta);
+  }
+}
+
 @keyframes monogram-from-left {
   from { opacity: 0; transform: translateX(-2.5rem); }
   to { opacity: 1; transform: translateX(0); }
@@ -75,10 +119,10 @@ body {
   50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.04); }
 }
 
-.monogram-letter-left,
-.monogram-letter-right,
-.monogram-ampersand,
-.monogram-frame {
+.monogram-animation-pending .monogram-letter-left,
+.monogram-animation-pending .monogram-letter-right,
+.monogram-animation-pending .monogram-ampersand,
+.monogram-animation-pending .monogram-frame {
   opacity: 0;
 }
 
@@ -104,6 +148,14 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .reveal-on-scroll-pending,
+  .reveal-on-scroll-pending.reveal-on-scroll-active {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .hero-photo-background,
+  .terracotta-photo-background { background-attachment: scroll; }
   .monogram-letter-left,
   .monogram-letter-right,
   .monogram-ampersand,
