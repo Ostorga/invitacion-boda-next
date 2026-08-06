@@ -19,30 +19,41 @@ export default function RevealOnScroll({
   useLayoutEffect(() => {
     const element = elementRef.current;
 
-    if (
-      !element ||
-      !("IntersectionObserver" in window) ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
+    if (!element) return;
 
     let hasRevealed = false;
-    element.classList.add("reveal-on-scroll-pending");
+    let observer: IntersectionObserver | undefined;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting || hasRevealed) return;
+    try {
+      if (
+        !("IntersectionObserver" in window) ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        return;
+      }
 
-        hasRevealed = true;
-        element.classList.add("reveal-on-scroll-active");
-        observer.unobserve(element);
-      },
-      { threshold: 0.01, rootMargin: "0px 0px 12% 0px" },
-    );
+      element.classList.add("reveal-on-scroll-pending");
 
-    observer.observe(element);
-    return () => observer.disconnect();
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting || hasRevealed) return;
+
+          hasRevealed = true;
+          element.classList.add("reveal-on-scroll-active");
+          observer?.unobserve(element);
+        },
+        { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+      );
+
+      observer.observe(element);
+    } catch {
+      element.classList.remove(
+        "reveal-on-scroll-pending",
+        "reveal-on-scroll-active",
+      );
+    }
+
+    return () => observer?.disconnect();
   }, []);
 
   return (
