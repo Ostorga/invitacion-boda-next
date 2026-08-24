@@ -88,9 +88,9 @@ export const wedding = {
     { name: "Marrón", className: "bg-wedding-brown" },
   ],
   gallery: [
-    { id: 1, text: "Texto por confirmar", image: null as string | null },
-    { id: 2, text: "Texto por confirmar", image: null as string | null },
-    { id: 3, text: "Texto por confirmar", image: null as string | null },
-    { id: 4, text: "Texto por confirmar", image: null as string | null },
+    { id: 1, text: "Momento 01", image: "/images/image1.JPG.webp" },
+    { id: 2, text: "Momento 02", image: "/images/IMG2.JPG.webp" },
+    { id: 3, text: "Momento 03", image: "/images/IMG3.JPG.webp" },
+    { id: 4, text: "Momento 04", image: "/images/IMG4.JPG.webp" },
   ],
 } as const;

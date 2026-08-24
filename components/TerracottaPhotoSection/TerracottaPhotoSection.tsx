@@ -8,6 +8,7 @@ type TerracottaPhotoSectionProps = Omit<
   children: ReactNode;
   className?: string;
   contentClassName?: string;
+  backgroundImage?: string;
   id?: string;
   as?: "section" | "footer";
 };
@@ -16,6 +17,7 @@ export default function TerracottaPhotoSection({
   children,
   className = "",
   contentClassName = "",
+  backgroundImage = wedding.hero.image,
   id,
   as = "section",
   ...props
@@ -32,7 +34,7 @@ export default function TerracottaPhotoSection({
       <div
         aria-hidden="true"
         className="terracotta-photo-background pointer-events-none absolute inset-0 -z-30 bg-cover bg-no-repeat"
-        style={{ backgroundImage: `url(${wedding.hero.image})` }}
+        style={{ backgroundImage: `url(${backgroundImage})` }}
       />
       <div
         aria-hidden="true"

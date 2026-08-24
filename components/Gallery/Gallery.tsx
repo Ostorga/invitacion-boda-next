@@ -1,5 +1,6 @@
 import { wedding } from "@/data/wedding";
 import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
+import Image from "next/image";
 
 export default function Gallery() {
   return (
@@ -24,16 +25,13 @@ export default function Gallery() {
             <div
               className="relative aspect-[3/4] overflow-hidden rounded-[1.75rem] border border-wedding-terracotta/50 bg-white"
             >
-              <div className="absolute inset-4 grid place-items-center rounded-[1.3rem] border border-dashed border-wedding-brown/25 text-center">
-                <div>
-                  <span className="font-display text-4xl text-wedding-brown/35">
-                    {String(photo.id).padStart(2, "0")}
-                  </span>
-                  <p className="mt-2 text-xs uppercase tracking-[0.2em] text-wedding-brown/80">
-                    {photo.text}
-                  </p>
-                </div>
-              </div>
+              <Image
+                src={photo.image}
+                alt={`${photo.text} de Oscar y Damaris`}
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                className="object-cover transition-transform duration-700 hover:scale-105"
+              />
             </div>
             </RevealOnScroll>
           ))}

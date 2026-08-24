@@ -53,6 +53,7 @@ export default function Countdown() {
   return (
     <TerracottaPhotoSection
       id="cuenta-regresiva"
+      backgroundImage="/images/IMG5.JPG.webp"
       className="px-5 py-20 text-center text-white sm:py-24"
       aria-labelledby="countdown-title"
     >
