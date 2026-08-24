@@ -1,14 +1,14 @@
 import { wedding } from "@/data/wedding";
 import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
+import ParallaxPhotoBackground from "@/components/ParallaxPhotoBackground/ParallaxPhotoBackground";
 
 export default function Hero() {
   return (
     <section className="relative isolate flex min-h-[100svh] items-end overflow-hidden bg-wedding-brown text-white sm:items-center">
-      <div
-        role="img"
-        aria-label={`${wedding.couple.displayName} durante su sesión de compromiso`}
-        className="hero-photo-background absolute inset-0 bg-cover bg-no-repeat"
-        style={{ backgroundImage: `url(${wedding.hero.image})` }}
+      <ParallaxPhotoBackground
+        image={wedding.hero.image}
+        className="hero-photo-background"
+        ariaLabel={`${wedding.couple.displayName} durante su sesión de compromiso`}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-wedding-brown/30 to-black/10 sm:bg-gradient-to-r sm:from-black/80 sm:via-wedding-brown/30 sm:to-transparent" />
       <div className="relative mx-auto w-full max-w-7xl px-6 pb-16 pt-36 sm:px-10 sm:py-28 lg:px-16">

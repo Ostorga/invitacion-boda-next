@@ -99,7 +99,6 @@ select option:checked {
 }
 
 .hero-photo-background {
-  background-attachment: scroll;
   background-position: 52% 35%;
 }
 
@@ -112,17 +111,9 @@ select option:checked {
   background-color: transparent;
 }
 
-@media (min-width: 48rem) and (hover: hover) and (pointer: fine) {
-  .hero-photo-background {
-    background-attachment: fixed;
-    background-position: center 38%;
-  }
-
-  .terracotta-photo-background {
-    display: block;
-    background-attachment: fixed;
-    background-position: center 38%;
-  }
+@media (min-width: 48rem) {
+  .hero-photo-background,
+  .terracotta-photo-background { display: block; }
 
   .terracotta-photo-section {
     background-color: var(--wedding-terracotta);
@@ -137,6 +128,4 @@ select option:checked {
     transform: none;
     transition: none;
   }
-  .hero-photo-background,
-  .terracotta-photo-background { background-attachment: scroll; }
 }

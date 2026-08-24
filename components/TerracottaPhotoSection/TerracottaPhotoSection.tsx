@@ -1,5 +1,6 @@
 import type { ElementType, HTMLAttributes, ReactNode } from "react";
 import { wedding } from "@/data/wedding";
+import ParallaxPhotoBackground from "@/components/ParallaxPhotoBackground/ParallaxPhotoBackground";
 
 type TerracottaPhotoSectionProps = Omit<
   HTMLAttributes<HTMLElement>,
@@ -33,13 +34,10 @@ export default function TerracottaPhotoSection({
       {...props}
       data-terracotta-photo-section=""
     >
-      <div
-        aria-hidden="true"
-        className="terracotta-photo-background pointer-events-none absolute inset-0 -z-30 bg-cover bg-no-repeat"
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-          ...(backgroundPosition ? { backgroundPosition } : {}),
-        }}
+      <ParallaxPhotoBackground
+        image={backgroundImage}
+        position={backgroundPosition ?? "center 38%"}
+        className="terracotta-photo-background"
       />
       <div
         aria-hidden="true"
