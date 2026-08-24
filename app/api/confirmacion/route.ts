@@ -1,10 +1,12 @@
 import { Resend } from "resend";
+import { FieldValue } from "firebase-admin/firestore";
 import {
   MAX_RSVP_BODY_BYTES,
   escapeHtml,
   guestCountContent,
   rsvpSchema,
 } from "../../../lib/rsvp.ts";
+import { getAdminFirestore } from "../../../lib/firebase-admin.ts";
 
 export const runtime = "nodejs";
 
@@ -53,6 +55,26 @@ export async function POST(request: Request) {
   if (!apiKey || !to || !from) {
     console.error("RSVP email configuration is incomplete.");
     return json("No pudimos enviar tu confirmación. Inténtalo nuevamente.", 503);
+  }
+
+  let confirmationReference;
+  try {
+    const db = getAdminFirestore();
+    confirmationReference = await db.collection("confirmaciones").add({
+      nombre: confirmation.name,
+      asistencia: confirmation.attendance === "yes",
+      cantidadPersonas:
+        confirmation.attendance === "yes" ? confirmation.guests : 0,
+      mensaje: confirmation.message || "",
+      fechaConfirmacion: FieldValue.serverTimestamp(),
+      correoEnviado: false,
+    });
+  } catch (error) {
+    console.error("Failed to save RSVP in Firestore.", {
+      type: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : "Unknown Firestore error",
+    });
+    return json("No pudimos guardar tu confirmación. Inténtalo nuevamente.", 503);
   }
 
   const attendanceLabel =
@@ -109,6 +131,16 @@ export async function POST(request: Request) {
         code: error?.name ?? "missing_email_id",
       });
       return json("No pudimos enviar tu confirmación. Inténtalo nuevamente.", 503);
+    }
+
+    try {
+      await confirmationReference.update({ correoEnviado: true });
+    } catch (error) {
+      console.error("RSVP email sent, but Firestore status update failed.", {
+        type: error instanceof Error ? error.name : "unknown",
+        message: error instanceof Error ? error.message : "Unknown Firestore error",
+      });
+      return json("No pudimos completar tu confirmación. Inténtalo nuevamente.", 503);
     }
 
     return json("Confirmación enviada correctamente.", 200);

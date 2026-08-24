@@ -3,9 +3,9 @@ import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
 
 export default function Closing() {
   return (
-    <section className="relative overflow-hidden px-6 py-24 text-center sm:py-32">
+    <section className="closing-texture relative overflow-hidden px-6 py-24 text-center sm:py-32">
       <div
-        className="closing-heart absolute left-1/2 top-1/2 -z-10 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-wedding-terracotta/50"
+        className="absolute left-1/2 top-1/2 -z-10 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-wedding-terracotta/50"
         aria-hidden="true"
       />
       <RevealOnScroll>

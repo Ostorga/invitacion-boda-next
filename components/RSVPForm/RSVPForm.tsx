@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { wedding } from "@/data/wedding";
 import RevealOnScroll from "@/components/RevealOnScroll/RevealOnScroll";
 import TerracottaPhotoSection from "@/components/TerracottaPhotoSection/TerracottaPhotoSection";
@@ -19,9 +19,22 @@ function isValidGuestCount(value: string) {
 export default function RSVPForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const submissionInProgress = useRef(false);
+  const attendanceMenuRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<SubmissionStatus>("initial");
   const [attendance, setAttendance] = useState<Attendance>("");
   const [guests, setGuests] = useState("");
+  const [attendanceMenuOpen, setAttendanceMenuOpen] = useState(false);
+
+  useEffect(() => {
+    function closeAttendanceMenu(event: MouseEvent) {
+      if (!attendanceMenuRef.current?.contains(event.target as Node)) {
+        setAttendanceMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", closeAttendanceMenu);
+    return () => document.removeEventListener("mousedown", closeAttendanceMenu);
+  }, []);
 
   function handleAttendanceChange(event: React.ChangeEvent<HTMLSelectElement>) {
     const nextAttendance = event.target.value as Attendance;
@@ -77,7 +90,12 @@ export default function RSVPForm() {
   }[status];
 
   return (
-    <TerracottaPhotoSection id="confirmar" className="px-6 py-20 text-white sm:py-28">
+    <TerracottaPhotoSection
+      id="confirmar"
+      backgroundImage="/images/6.JPG.webp"
+      backgroundPosition="center 60%"
+      className="px-6 py-20 text-white sm:py-28"
+    >
       <div className="mx-auto max-w-2xl">
         <RevealOnScroll>
           <header className="text-center">
@@ -102,18 +120,65 @@ export default function RSVPForm() {
             </div>
             <div>
               <label htmlFor="attendance" className="text-sm font-medium">¿Asistirás?</label>
-              <select
-                id="attendance"
-                name="attendance"
-                value={attendance}
-                onChange={handleAttendanceChange}
-                required
-                className={fieldClass}
-              >
-                <option value="" disabled className="text-foreground">Selecciona una respuesta</option>
-                <option value="yes" className="text-foreground">Sí, asistiré</option>
-                <option value="no" className="text-foreground">No podré asistir</option>
-              </select>
+              <div ref={attendanceMenuRef} className="relative mt-2">
+                <select
+                  name="attendance"
+                  value={attendance}
+                  onChange={handleAttendanceChange}
+                  required
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  className="sr-only"
+                >
+                  <option value="">Selecciona una respuesta</option>
+                  <option value="yes">Sí, asistiré</option>
+                  <option value="no">No podré asistir</option>
+                </select>
+                <button
+                  id="attendance"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={attendanceMenuOpen}
+                  onClick={() => setAttendanceMenuOpen((isOpen) => !isOpen)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") setAttendanceMenuOpen(false);
+                    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                      event.preventDefault();
+                      setAttendanceMenuOpen(true);
+                    }
+                  }}
+                  className={`${fieldClass} flex cursor-pointer items-center justify-between text-left`}
+                >
+                  <span>{attendance === "yes" ? "Sí, asistiré" : attendance === "no" ? "No podré asistir" : "Selecciona una respuesta"}</span>
+                  <span aria-hidden="true" className="ml-3 text-lg leading-none">⌄</span>
+                </button>
+                {attendanceMenuOpen && (
+                  <div
+                    role="listbox"
+                    aria-labelledby="attendance"
+                    className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-wedding-beige/60 bg-wedding-beige/95 py-1 text-wedding-brown shadow-xl backdrop-blur-sm"
+                  >
+                    {[
+                      ["yes", "Sí, asistiré"],
+                      ["no", "No podré asistir"],
+                    ].map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        role="option"
+                        aria-selected={attendance === value}
+                        onClick={() => {
+                          handleAttendanceChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>);
+                          setAttendanceMenuOpen(false);
+                        }}
+                        className="block w-full px-4 py-3 text-left transition-colors hover:bg-wedding-terracotta hover:text-wedding-beige focus:bg-wedding-terracotta focus:text-wedding-beige focus:outline-none"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label htmlFor="guestName" className="text-sm font-medium">Nombre completo</label>

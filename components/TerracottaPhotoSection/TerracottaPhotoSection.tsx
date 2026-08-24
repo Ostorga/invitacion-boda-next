@@ -9,6 +9,7 @@ type TerracottaPhotoSectionProps = Omit<
   className?: string;
   contentClassName?: string;
   backgroundImage?: string;
+  backgroundPosition?: string;
   id?: string;
   as?: "section" | "footer";
 };
@@ -18,6 +19,7 @@ export default function TerracottaPhotoSection({
   className = "",
   contentClassName = "",
   backgroundImage = wedding.hero.image,
+  backgroundPosition,
   id,
   as = "section",
   ...props
@@ -34,7 +36,10 @@ export default function TerracottaPhotoSection({
       <div
         aria-hidden="true"
         className="terracotta-photo-background pointer-events-none absolute inset-0 -z-30 bg-cover bg-no-repeat"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          ...(backgroundPosition ? { backgroundPosition } : {}),
+        }}
       />
       <div
         aria-hidden="true"

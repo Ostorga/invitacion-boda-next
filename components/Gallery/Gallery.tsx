@@ -23,7 +23,7 @@ export default function Gallery() {
           {wedding.gallery.map((photo, index) => (
             <RevealOnScroll key={photo.id} delay={(index % 4) * 0.1}>
             <div
-              className="relative aspect-[3/4] overflow-hidden rounded-[1.75rem] border border-wedding-terracotta/50 bg-white"
+              className="relative aspect-[3/4] overflow-hidden rounded-[1.75rem] border border-wedding-terracotta/50 bg-white transition-shadow duration-700 hover:shadow-2xl hover:shadow-wedding-brown/35"
             >
               <Image
                 src={photo.image}

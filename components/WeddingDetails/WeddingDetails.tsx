@@ -13,15 +13,15 @@ export default function WeddingDetails() {
           <p className="eyebrow">Los esperamos</p>
           <h2 className="section-title">El gran día</h2>
           <p className="mt-4 text-wedding-brown/80">
-            Dos momentos únicos para celebrar juntos.
+            Un momento único para celebrar juntos.
           </p>
         </header>
         </RevealOnScroll>
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {wedding.events.map((event, index) => (
-            <RevealOnScroll key={event.title} delay={index * 0.1}>
+        <div className="mt-12 flex justify-center">
+          {wedding.events.slice(0, 1).map((event) => (
+            <RevealOnScroll key={event.title}>
             <article
-              className="rounded-[2rem] border border-wedding-terracotta/60 bg-white p-8 text-center shadow-[0_18px_60px_rgba(150,51,26,0.08)] sm:p-10"
+              className="w-full max-w-2xl rounded-[2rem] border border-wedding-terracotta/60 bg-white p-8 text-center shadow-[0_18px_60px_rgba(150,51,26,0.08)] sm:p-10"
             >
               <span
                 className="mx-auto block h-10 w-px bg-wedding-terracotta"

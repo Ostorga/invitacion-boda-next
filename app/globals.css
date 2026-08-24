@@ -38,6 +38,30 @@ body {
   font-weight: 400;
 }
 
+.closing-texture {
+  background-color: var(--wedding-beige);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(150, 51, 26, 0.018) 0,
+      rgba(150, 51, 26, 0.018) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(150, 51, 26, 0.012) 0,
+      rgba(150, 51, 26, 0.012) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+}
+
+select option:checked {
+  background: var(--wedding-terracotta);
+  color: var(--wedding-beige);
+}
+
 .eyebrow {
   color: var(--wedding-brown);
   font-size: 0.75rem;
@@ -105,15 +129,6 @@ body {
   }
 }
 
-@keyframes closing-pulse {
-  0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(0.92); }
-  50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.04); }
-}
-
-.closing-heart {
-  animation: closing-pulse 4s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal-on-scroll-pending,
@@ -124,5 +139,4 @@ body {
   }
   .hero-photo-background,
   .terracotta-photo-background { background-attachment: scroll; }
-  .closing-heart { animation: none; }
 }
