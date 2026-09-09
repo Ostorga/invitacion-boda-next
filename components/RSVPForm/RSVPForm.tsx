@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -10,10 +11,11 @@ const fieldClass =
 
 type SubmissionStatus = "initial" | "sending" | "success" | "error";
 type Attendance = "" | "yes" | "no";
+type CodeStatus = "idle" | "checking" | "valid" | "invalid";
 
-function isValidGuestCount(value: string) {
-  const count = Number(value);
-  return value.trim() !== "" && Number.isInteger(count) && count >= 1 && count <= 20;
+function sanitizeName(value: string) {
+  // Solo letras (incluye acentos/ñ), espacios y algunos signos típicos de nombres.
+  return value.replace(/[^\p{L}\p{M}\s.'’\-–]/gu, "");
 }
 
 export default function RSVPForm() {
@@ -22,8 +24,13 @@ export default function RSVPForm() {
   const attendanceMenuRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<SubmissionStatus>("initial");
   const [attendance, setAttendance] = useState<Attendance>("");
-  const [guests, setGuests] = useState("");
   const [attendanceMenuOpen, setAttendanceMenuOpen] = useState(false);
+  const [name, setName] = useState("");
+
+  const [code, setCode] = useState("");
+  const [codeStatus, setCodeStatus] = useState<CodeStatus>("idle");
+  const [codeError, setCodeError] = useState("");
+  const [reservedGuests, setReservedGuests] = useState<number | null>(null);
 
   useEffect(() => {
     function closeAttendanceMenu(event: MouseEvent) {
@@ -36,20 +43,70 @@ export default function RSVPForm() {
     return () => document.removeEventListener("mousedown", closeAttendanceMenu);
   }, []);
 
-  function handleAttendanceChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    const nextAttendance = event.target.value as Attendance;
-    setAttendance(nextAttendance);
+  function handleAttendanceChange(
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ) {
+    setAttendance(event.target.value as Attendance);
+  }
 
-    if (nextAttendance === "no") {
-      setGuests("0");
-    } else if (nextAttendance === "yes" && !isValidGuestCount(guests)) {
-      setGuests("1");
+  function handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setName(sanitizeName(event.target.value));
+  }
+
+  function handleCodeChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setCode(event.target.value.replace(/\D/g, "").slice(0, 5));
+    if (codeStatus !== "idle") {
+      setCodeStatus("idle");
+      setCodeError("");
+      setReservedGuests(null);
     }
+  }
+
+  async function verifyCode() {
+    if (code.length !== 5) {
+      setCodeStatus("invalid");
+      setCodeError("Ingresa un código de 5 dígitos.");
+      return;
+    }
+
+    setCodeStatus("checking");
+    setCodeError("");
+
+    try {
+      const response = await fetch("/api/verificar-codigo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setCodeStatus("invalid");
+        setCodeError(data?.message ?? "Código inválido.");
+        setReservedGuests(null);
+        return;
+      }
+
+      setReservedGuests(data.guests);
+      setCodeStatus("valid");
+    } catch {
+      setCodeStatus("invalid");
+      setCodeError("No pudimos verificar el código. Inténtalo nuevamente.");
+      setReservedGuests(null);
+    }
+  }
+
+  function resetCode() {
+    setCode("");
+    setCodeStatus("idle");
+    setCodeError("");
+    setReservedGuests(null);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submissionInProgress.current) return;
+    if (submissionInProgress.current || codeStatus !== "valid") return;
 
     submissionInProgress.current = true;
     setStatus("sending");
@@ -62,9 +119,9 @@ export default function RSVPForm() {
         body: JSON.stringify({
           attendance,
           name: formData.get("name"),
-          guests: attendance === "no" ? 0 : guests,
           message: formData.get("message"),
           website: formData.get("website"),
+          code: formData.get("code"),
         }),
       });
 
@@ -72,7 +129,8 @@ export default function RSVPForm() {
 
       formRef.current?.reset();
       setAttendance("");
-      setGuests("");
+      setName("");
+      resetCode();
       setStatus("success");
     } catch {
       setStatus("error");
@@ -84,7 +142,7 @@ export default function RSVPForm() {
   const statusMessage = {
     initial: "Completa el formulario para confirmar tu asistencia.",
     sending: "Enviando confirmación…",
-    success: "¡Gracias! Tu confirmación fue enviada correctamente.",
+    success: "Gracias por confirmar tu asistencia.",
     error:
       "No pudimos enviar tu confirmación. Conservamos tus datos para que puedas intentarlo nuevamente.",
   }[status];
@@ -103,10 +161,14 @@ export default function RSVPForm() {
             <h2 className="section-title !text-white">Asistencia</h2>
             <p className="mt-4 text-white/75">
               Confirma tu asistencia antes del{" "}
-              <time dateTime={wedding.rsvp.deadlineIso}>{wedding.rsvp.deadlineDisplay}</time>.
+              <time dateTime={wedding.rsvp.deadlineIso}>
+                {wedding.rsvp.deadlineDisplay}
+              </time>
+              .
             </p>
           </header>
         </RevealOnScroll>
+
         <RevealOnScroll delay={0.1}>
           <form
             ref={formRef}
@@ -114,119 +176,260 @@ export default function RSVPForm() {
             className="mt-10 space-y-6 rounded-[2rem] border border-white/15 bg-white/5 p-6 shadow-2xl backdrop-blur-sm sm:p-10"
             aria-label="Formulario de confirmación de asistencia"
           >
-            <div className="absolute left-[-10000px] h-px w-px overflow-hidden" aria-hidden="true">
-              <label htmlFor="website">No completar este campo</label>
-              <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
-            </div>
-            <div>
-              <label htmlFor="attendance" className="text-sm font-medium">¿Asistirás?</label>
-              <div ref={attendanceMenuRef} className="relative mt-2">
-                <select
-                  name="attendance"
-                  value={attendance}
-                  onChange={handleAttendanceChange}
-                  required
-                  tabIndex={-1}
+            {status === "success" ? (
+              <div className="py-8 text-center">
+                <p className="text-2xl font-semibold text-wedding-beige sm:text-3xl">
+                  Gracias por confirmar tu asistencia.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div
+                  className="absolute left-[-10000px] h-px w-px overflow-hidden"
                   aria-hidden="true"
-                  className="sr-only"
                 >
-                  <option value="">Selecciona una respuesta</option>
-                  <option value="yes">Sí, asistiré</option>
-                  <option value="no">No podré asistir</option>
-                </select>
-                <button
-                  id="attendance"
-                  type="button"
-                  aria-haspopup="listbox"
-                  aria-expanded={attendanceMenuOpen}
-                  onClick={() => setAttendanceMenuOpen((isOpen) => !isOpen)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Escape") setAttendanceMenuOpen(false);
-                    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-                      event.preventDefault();
-                      setAttendanceMenuOpen(true);
-                    }
-                  }}
-                  className={`${fieldClass} flex cursor-pointer items-center justify-between text-left`}
-                >
-                  <span>{attendance === "yes" ? "Sí, asistiré" : attendance === "no" ? "No podré asistir" : "Selecciona una respuesta"}</span>
-                  <span aria-hidden="true" className="ml-3 text-lg leading-none">⌄</span>
-                </button>
-                {attendanceMenuOpen && (
-                  <div
-                    role="listbox"
-                    aria-labelledby="attendance"
-                    className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-wedding-beige/60 bg-wedding-beige/95 py-1 text-wedding-brown shadow-xl backdrop-blur-sm"
-                  >
-                    {[
-                      ["yes", "Sí, asistiré"],
-                      ["no", "No podré asistir"],
-                    ].map(([value, label]) => (
-                      <button
-                        key={value}
-                        type="button"
-                        role="option"
-                        aria-selected={attendance === value}
-                        onClick={() => {
-                          handleAttendanceChange({ target: { value } } as React.ChangeEvent<HTMLSelectElement>);
-                          setAttendanceMenuOpen(false);
+                  <label htmlFor="website">No completar este campo</label>
+                  <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
+                {codeStatus === "valid" ? (
+                  <div>
+                    <input type="hidden" name="code" value={code} />
+                    <p className="text-sm font-medium">Lugares reservados</p>
+                    <p className="mt-2 text-3xl font-semibold text-wedding-beige sm:text-4xl">
+                      {reservedGuests}{" "}
+                      {reservedGuests === 1 ? "persona" : "personas"}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <label
+                      htmlFor="code"
+                      className="text-sm font-medium"
+                    >
+                      Código de invitación
+                    </label>
+                    <div className="mt-2 flex gap-3">
+                      <input
+                        id="code"
+                        name="code"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="\d{5}"
+                        maxLength={5}
+                        autoComplete="off"
+                        required
+                        value={code}
+                        onChange={handleCodeChange}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            verifyCode();
+                          }
                         }}
-                        className="block w-full px-4 py-3 text-left transition-colors hover:bg-wedding-terracotta hover:text-wedding-beige focus:bg-wedding-terracotta focus:text-wedding-beige focus:outline-none"
+                        placeholder="Ej. 12345"
+                        className={fieldClass}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={verifyCode}
+                        disabled={codeStatus === "checking"}
+                        className="mt-2 shrink-0 rounded-xl bg-wedding-terracotta px-5 py-3 text-sm font-semibold text-black transition hover:bg-wedding-beige disabled:opacity-60"
                       >
-                        {label}
+                        {codeStatus === "checking"
+                          ? "Verificando…"
+                          : "Verificar"}
                       </button>
-                    ))}
+                    </div>
+
+                    {codeStatus === "invalid" && codeError && (
+                      <p className="mt-2 text-xs text-red-200">
+                        {codeError}
+                      </p>
+                    )}
                   </div>
                 )}
-              </div>
-            </div>
-            <div>
-              <label htmlFor="guestName" className="text-sm font-medium">Nombre completo</label>
-              <input id="guestName" name="name" type="text" autoComplete="name" required minLength={2} maxLength={100} placeholder="Tu nombre completo" className={fieldClass} />
-            </div>
-            <div
-              className={`grid transition-[grid-template-rows,opacity,margin] duration-300 motion-reduce:transition-none ${
-                attendance === "yes"
-                  ? "!mt-6 grid-rows-[1fr] opacity-100"
-                  : "!mt-0 grid-rows-[0fr] opacity-0"
-              }`}
-              aria-hidden={attendance !== "yes"}
-              inert={attendance !== "yes" ? true : undefined}
-            >
-              <div className="overflow-hidden">
-                <label htmlFor="guestCount" className="text-sm font-medium">Número de personas</label>
-                <input
-                  id="guestCount"
-                  name="guests"
-                  type="number"
-                  min={1}
-                  max={20}
-                  step={1}
-                  required={attendance === "yes"}
-                  disabled={attendance !== "yes"}
-                  inputMode="numeric"
-                  placeholder="1"
-                  value={attendance === "yes" ? guests : ""}
-                  onChange={(event) => setGuests(event.target.value)}
-                  className={fieldClass}
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="message" className="text-sm font-medium">Mensaje para los novios</label>
-              <textarea id="message" name="message" rows={4} maxLength={500} placeholder={`Escribe unas palabras para ${wedding.couple.displayName}`} className={`${fieldClass} resize-y`} />
-            </div>
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="w-full rounded-full bg-wedding-terracotta px-7 py-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-black transition hover:bg-wedding-beige hover:text-wedding-brown focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-wedding-beige"
-              aria-describedby="form-status"
-            >
-              {status === "sending" ? "Enviando confirmación…" : "Confirmar asistencia"}
-            </button>
-            <p id="form-status" className="text-center text-xs text-white/55" aria-live="polite" aria-atomic="true">
-              {statusMessage}
-            </p>
+
+                <div
+                  className={`grid transition-[grid-template-rows,opacity,margin] duration-300 motion-reduce:transition-none ${
+                    codeStatus === "valid"
+                      ? "!mt-6 grid-rows-[1fr] opacity-100"
+                      : "!mt-0 grid-rows-[0fr] opacity-0"
+                  }`}
+                  aria-hidden={codeStatus !== "valid"}
+                  inert={codeStatus !== "valid" ? true : undefined}
+                >
+                  <div className="overflow-hidden space-y-6">
+                    <div>
+                      <label
+                        htmlFor="attendance"
+                        className="text-sm font-medium"
+                      >
+                        ¿Asistirás?
+                      </label>
+
+                      <div
+                        ref={attendanceMenuRef}
+                        className="relative mt-2"
+                      >
+                        <select
+                          name="attendance"
+                          value={attendance}
+                          onChange={handleAttendanceChange}
+                          required={codeStatus === "valid"}
+                          tabIndex={-1}
+                          aria-hidden="true"
+                          className="sr-only"
+                        >
+                          <option value="">
+                            Selecciona una respuesta
+                          </option>
+                          <option value="yes">Sí, asistiré</option>
+                          <option value="no">No podré asistir</option>
+                        </select>
+
+                        <button
+                          id="attendance"
+                          type="button"
+                          aria-haspopup="listbox"
+                          aria-expanded={attendanceMenuOpen}
+                          onClick={() =>
+                            setAttendanceMenuOpen((isOpen) => !isOpen)
+                          }
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") {
+                              setAttendanceMenuOpen(false);
+                            }
+
+                            if (
+                              event.key === "ArrowDown" ||
+                              event.key === "ArrowUp"
+                            ) {
+                              event.preventDefault();
+                              setAttendanceMenuOpen(true);
+                            }
+                          }}
+                          className={`${fieldClass} flex cursor-pointer items-center justify-between text-left`}
+                        >
+                          <span>
+                            {attendance === "yes"
+                              ? "Sí, asistiré"
+                              : attendance === "no"
+                                ? "No podré asistir"
+                                : "Selecciona una respuesta"}
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            className="ml-3 text-lg leading-none"
+                          >
+                            ⌄
+                          </span>
+                        </button>
+
+                        {attendanceMenuOpen && (
+                          <div
+                            role="listbox"
+                            aria-labelledby="attendance"
+                            className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-wedding-beige/60 bg-wedding-beige/95 py-1 text-wedding-brown shadow-xl backdrop-blur-sm"
+                          >
+                            {[
+                              ["yes", "Sí, asistiré"],
+                              ["no", "No podré asistir"],
+                            ].map(([value, label]) => (
+                              <button
+                                key={value}
+                                type="button"
+                                role="option"
+                                aria-selected={attendance === value}
+                                onClick={() => {
+                                  handleAttendanceChange({
+                                    target: { value },
+                                  } as React.ChangeEvent<HTMLSelectElement>);
+                                  setAttendanceMenuOpen(false);
+                                }}
+                                className="block w-full px-4 py-3 text-left transition-colors hover:bg-wedding-terracotta hover:text-wedding-beige focus:bg-wedding-terracotta focus:text-wedding-beige focus:outline-none"
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="guestName"
+                        className="text-sm font-medium"
+                      >
+                        Nombre completo
+                      </label>
+
+                      <input
+                        id="guestName"
+                        name="name"
+                        type="text"
+                        autoComplete="name"
+                        required={codeStatus === "valid"}
+                        minLength={2}
+                        maxLength={100}
+                        placeholder="Tu nombre completo"
+                        value={name}
+                        onChange={handleNameChange}
+                        className={fieldClass}
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="message"
+                        className="text-sm font-medium"
+                      >
+                        Mensaje para los novios
+                      </label>
+
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={4}
+                        maxLength={500}
+                        placeholder={`Escribe unas palabras para ${wedding.couple.displayName}`}
+                        className={`${fieldClass} resize-y`}
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={
+                        status === "sending" || codeStatus !== "valid"
+                      }
+                      className="w-full rounded-full bg-wedding-terracotta px-7 py-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-black transition hover:bg-wedding-beige hover:text-wedding-brown focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-wedding-beige disabled:opacity-60"
+                      aria-describedby="form-status"
+                    >
+                      {status === "sending"
+                        ? "Enviando confirmación…"
+                        : "Confirmar asistencia"}
+                    </button>
+
+                    <p
+                      id="form-status"
+                      className="text-center text-xs text-white/55"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
+                      {statusMessage}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </form>
         </RevealOnScroll>
       </div>

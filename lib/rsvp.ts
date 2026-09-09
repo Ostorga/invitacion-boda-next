@@ -2,6 +2,29 @@ import { z } from "zod";
 
 export const MAX_RSVP_BODY_BYTES = 8_192;
 
+export const RSVP_CODES: Record<string, number> = {
+  "73942": 1,
+  "28615": 2,
+  "59374": 3,
+  "16820": 4,
+  "84297": 5,
+  "37561": 6,
+  "92148": 7,
+  "64730": 8,
+  "15963": 9,
+  "48276": 10,
+};
+
+export function getGuestsForCode(code: string): number | null {
+  return RSVP_CODES[code] ?? null;
+}
+
+export const codeSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{5}$/, "Código inválido")
+  .refine((value) => getGuestsForCode(value) !== null, "Código inválido");
+
 const commonFields = {
   name: z
     .string()
@@ -11,39 +34,20 @@ const commonFields = {
     .regex(/^[\p{L}\p{M}][\p{L}\p{M}\s.'’\-–]*$/u),
   message: z.string().trim().max(500).optional().default(""),
   website: z.string().max(200).optional().default(""),
+  code: codeSchema,
 };
 
-const attendingSchema = z
+export const rsvpSchema = z
   .object({
     ...commonFields,
-    attendance: z.literal("yes"),
-    guests: z
-      .union([z.number(), z.string().regex(/^\d+$/)])
-      .transform(Number)
-      .pipe(z.number().int().min(1).max(20)),
+    attendance: z.enum(["yes", "no"]),
   })
   .strict();
-
-const notAttendingSchema = z
-  .object({
-    ...commonFields,
-    attendance: z.literal("no"),
-    guests: z.unknown().optional().transform(() => 0 as const),
-  })
-  .strict();
-
-export const rsvpSchema = z.discriminatedUnion("attendance", [
-  attendingSchema,
-  notAttendingSchema,
-]);
 
 export type Rsvp = z.infer<typeof rsvpSchema>;
 
-export function guestCountContent(
-  confirmation: Pick<Rsvp, "attendance" | "guests">,
-) {
-  const value =
-    confirmation.attendance === "no" ? "No aplica" : String(confirmation.guests);
+export function guestCountContent(attendance: "yes" | "no", guests: number) {
+  const value = attendance === "no" ? "No aplica" : String(guests);
 
   return {
     html: `<p style="margin:0 0 18px"><strong>Número de personas:</strong> ${value}</p>`,

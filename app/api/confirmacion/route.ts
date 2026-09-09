@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import {
   MAX_RSVP_BODY_BYTES,
   escapeHtml,
+  getGuestsForCode,
   guestCountContent,
   rsvpSchema,
 } from "../../../lib/rsvp.ts";
@@ -49,6 +50,12 @@ export async function POST(request: Request) {
     return json("Confirmación recibida correctamente.", 200);
   }
 
+  const capacity = getGuestsForCode(confirmation.code);
+  if (capacity === null) {
+    return json("Código de invitación inválido.", 400);
+  }
+  const guests = confirmation.attendance === "yes" ? capacity : 0;
+
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.RSVP_TO_EMAIL;
   const from = process.env.RESEND_FROM_EMAIL;
@@ -62,9 +69,9 @@ export async function POST(request: Request) {
     const db = getAdminFirestore();
     confirmationReference = await db.collection("confirmaciones").add({
       nombre: confirmation.name,
+      codigo: confirmation.code,
       asistencia: confirmation.attendance === "yes",
-      cantidadPersonas:
-        confirmation.attendance === "yes" ? confirmation.guests : 0,
+      cantidadPersonas: guests,
       mensaje: confirmation.message || "",
       fechaConfirmacion: FieldValue.serverTimestamp(),
       correoEnviado: false,
@@ -85,7 +92,7 @@ export async function POST(request: Request) {
     /\r?\n/g,
     "<br>",
   );
-  const guestCount = guestCountContent(confirmation);
+  const guestCount = guestCountContent(confirmation.attendance, guests);
 
   try {
     const resend = new Resend(apiKey);
