@@ -148,12 +148,13 @@ export default function RSVPForm() {
   }[status];
 
   return (
-    <TerracottaPhotoSection
-      id="confirmar"
-      backgroundImage="/images/6.JPG.webp"
-      backgroundPosition="center 60%"
-      className="px-6 py-20 text-white sm:py-28"
-    >
+      <TerracottaPhotoSection
+        id="confirmar"
+        backgroundImage="/images/6.JPG.webp"
+        backgroundPosition="center 60%"
+        className="text-white"
+        contentClassName="px-6 pt-20 pb-12 sm:pt-28 sm:pb-16"
+      >
       <div className="mx-auto max-w-2xl">
         <RevealOnScroll>
           <header className="text-center">

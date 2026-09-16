@@ -53,7 +53,7 @@ export default function WeddingDetails() {
               </p>
               <div className="mt-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-wedding-brown/80">
-                  Paleta sugerida
+                  Colores de vestimenta a evitar.
                 </p>
                 <ul
                   className="mt-3 flex items-center justify-center gap-4"

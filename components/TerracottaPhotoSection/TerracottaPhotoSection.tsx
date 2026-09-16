@@ -30,24 +30,31 @@ export default function TerracottaPhotoSection({
   return (
     <Tag
       id={id}
-      className={`terracotta-photo-section relative z-10 isolate overflow-hidden ${className}`}
+      className={`relative z-10 isolate ${className}`}
       {...props}
       data-terracotta-photo-section=""
     >
       <ParallaxPhotoBackground
         image={backgroundImage}
         position={backgroundPosition ?? "center 38%"}
-        className="terracotta-photo-background"
+        fillSection
+        overlay={
+          <>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-10 bg-wedding-terracotta/[0.82]"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-20 bg-black/20"
+            />
+          </>
+        }
       />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20 bg-wedding-terracotta/[0.82]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-black/20"
-      />
-      <div className={`relative z-10 ${contentClassName}`}>{children}</div>
+
+      <div className={`relative z-30 ${contentClassName}`}>
+        {children}
+      </div>
     </Tag>
   );
 }

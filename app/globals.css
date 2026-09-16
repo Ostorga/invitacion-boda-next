@@ -98,26 +98,21 @@ select option:checked {
   }
 }
 
-.hero-photo-background {
-  background-position: 52% 35%;
+.parallax-photo-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100svh;
+  margin-bottom: -100svh;
+  overflow: hidden;
 }
 
-.terracotta-photo-background {
+.parallax-photo-background {
   display: block;
-  background-position: 52% 35%;
-}
-
-.terracotta-photo-section {
-  background-color: transparent;
-}
-
-@media (min-width: 48rem) {
-  .hero-photo-background,
-  .terracotta-photo-background { display: block; }
-
-  .terracotta-photo-section {
-    background-color: var(--wedding-terracotta);
-  }
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media (prefers-reduced-motion: reduce) {

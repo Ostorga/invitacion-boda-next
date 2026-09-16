@@ -4,14 +4,13 @@ import ParallaxPhotoBackground from "@/components/ParallaxPhotoBackground/Parall
 
 export default function Hero() {
   return (
-    <section className="relative isolate flex min-h-[100svh] items-end overflow-hidden bg-wedding-brown text-white sm:items-center">
+    <section className="relative isolate bg-wedding-brown text-white">
       <ParallaxPhotoBackground
         image={wedding.hero.image}
-        className="hero-photo-background"
         ariaLabel={`${wedding.couple.displayName} durante su sesión de compromiso`}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-wedding-brown/30 to-black/10 sm:bg-gradient-to-r sm:from-black/80 sm:via-wedding-brown/30 sm:to-transparent" />
-      <div className="relative mx-auto w-full max-w-7xl px-6 pb-16 pt-36 sm:px-10 sm:py-28 lg:px-16">
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/85 via-wedding-brown/30 to-black/10 sm:bg-gradient-to-r sm:from-black/80 sm:via-wedding-brown/30 sm:to-transparent" />
+      <div className="relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl items-end px-6 pb-16 pt-36 sm:items-center sm:px-10 sm:py-28 lg:px-16">
         <RevealOnScroll className="max-w-md text-center sm:text-left">
           <p className="text-xs font-medium uppercase tracking-[0.3em] text-wedding-beige sm:text-sm">
             {wedding.hero.invitation}

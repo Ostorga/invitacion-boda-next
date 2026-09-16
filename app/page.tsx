@@ -11,7 +11,7 @@ import WeddingDetails from "@/components/WeddingDetails/WeddingDetails";
 
 export default function Home() {
   return (
-    <main className="overflow-hidden">
+    <main>
       <Hero />
       <OurStory />
       <Countdown />

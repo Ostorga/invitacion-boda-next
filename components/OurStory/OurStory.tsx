@@ -54,7 +54,10 @@ function StoryCard({
 
 export default function OurStory() {
   return (
-    <section id="historia" className="px-6 py-20 sm:py-28">
+    <section
+      id="historia"
+      className="relative z-10 bg-wedding-beige px-6 py-20 sm:py-28"
+    >
       <div className="mx-auto max-w-5xl">
         <RevealOnScroll>
         <header className="mx-auto max-w-2xl text-center">

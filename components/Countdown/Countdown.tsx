@@ -51,12 +51,13 @@ export default function Countdown() {
   }, []);
 
   return (
-    <TerracottaPhotoSection
-      id="cuenta-regresiva"
-      backgroundImage="/images/IMG5.JPG.webp"
-      className="px-5 py-20 text-center text-white sm:py-24"
-      aria-labelledby="countdown-title"
-    >
+      <TerracottaPhotoSection
+        id="cuenta-regresiva"
+        backgroundImage="/images/IMG5.JPG.webp"
+        className="text-center text-white"
+        contentClassName="px-5 pt-20 pb-12 sm:pt-24 sm:pb-16"
+        aria-labelledby="countdown-title"
+      >
       <RevealOnScroll>
       <p className="eyebrow !text-wedding-beige">El gran día se acerca</p>
       <h2 id="countdown-title" className="section-title !text-white">
