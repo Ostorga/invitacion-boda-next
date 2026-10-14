@@ -1,76 +1,43 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { POST } from "../app/api/confirmacion/route.ts";
-import { escapeHtml, guestCountContent, rsvpSchema } from "../lib/rsvp.ts";
+import { escapeHtml, rsvpSchema } from "../lib/rsvp.ts";
 
 const validConfirmation = {
   attendance: "yes",
   name: "  María José O'Connor  ",
-  guests: "2",
   message: "¡Nos vemos!",
   website: "",
 };
 
-const confirmationWithoutGuests = {
-  attendance: validConfirmation.attendance,
-  name: validConfirmation.name,
-  message: validConfirmation.message,
-  website: validConfirmation.website,
-};
+test("acepta confirmaciones sin código y normaliza el nombre", () => {
+  const result = rsvpSchema.parse(validConfirmation);
 
-test("acepta asistencia con cantidades enteras entre 1 y 20", () => {
-  for (const guests of [1, "2", 20]) {
-    const result = rsvpSchema.parse({ ...validConfirmation, guests });
-    assert.equal(result.name, "María José O'Connor");
-    assert.equal(result.guests, Number(guests));
-  }
+  assert.equal(result.name, "María José O'Connor");
+  assert.equal(result.attendance, "yes");
+  assert.equal(result.message, "¡Nos vemos!");
 });
 
-test("exige cantidad cuando sí asistirá", () => {
-  assert.equal(rsvpSchema.safeParse(confirmationWithoutGuests).success, false);
-});
-
-test("rechaza cantidades inválidas cuando sí asistirá", () => {
-  for (const value of [0, -1, 1.5, 21, "muchas", true, null, ""]) {
-    assert.equal(
-      rsvpSchema.safeParse({ ...validConfirmation, guests: value }).success,
-      false,
-    );
-  }
-});
-
-test("normaliza a cero cuando no asistirá con o sin cantidad", () => {
-  const withoutCount = rsvpSchema.parse({
-    ...confirmationWithoutGuests,
+test("el mensaje es opcional y se normaliza a texto vacío", () => {
+  const result = rsvpSchema.parse({
     attendance: "no",
-    message: "",
-  });
-  const manipulatedCount = rsvpSchema.parse({
-    ...validConfirmation,
-    attendance: "no",
-    guests: 19,
+    name: "Ana María",
   });
 
-  assert.equal(withoutCount.guests, 0);
-  assert.equal(manipulatedCount.guests, 0);
+  assert.equal(result.message, "");
 });
 
-test("muestra No aplica en el HTML y texto cuando no asistirá", () => {
-  const confirmation = rsvpSchema.parse({
-    ...validConfirmation,
-    attendance: "no",
-    guests: 3,
-  });
-  const content = guestCountContent(confirmation);
-
-  assert.match(content.html, /Número de personas:<\/strong> No aplica/);
-  assert.equal(content.text, "Número de personas: No aplica");
-  assert.doesNotMatch(content.html, />3<| 3<\/p>/);
-});
-
-test("rechaza asistencia y propiedades manipuladas", () => {
+test("rechaza asistencia, nombre y propiedades no permitidas", () => {
   assert.equal(
     rsvpSchema.safeParse({ ...validConfirmation, attendance: "maybe" }).success,
+    false,
+  );
+  assert.equal(
+    rsvpSchema.safeParse({ ...validConfirmation, name: "A" }).success,
+    false,
+  );
+  assert.equal(
+    rsvpSchema.safeParse({ ...validConfirmation, code: "73942" }).success,
     false,
   );
   assert.equal(
@@ -145,8 +112,11 @@ test("devuelve 503 si falta cualquier variable del servidor", async () => {
     }
   } finally {
     console.error = originalError;
-    if (previous.apiKey) process.env.RESEND_API_KEY = previous.apiKey;
-    if (previous.to) process.env.RSVP_TO_EMAIL = previous.to;
-    if (previous.from) process.env.RESEND_FROM_EMAIL = previous.from;
+    if (previous.apiKey === undefined) delete process.env.RESEND_API_KEY;
+    else process.env.RESEND_API_KEY = previous.apiKey;
+    if (previous.to === undefined) delete process.env.RSVP_TO_EMAIL;
+    else process.env.RSVP_TO_EMAIL = previous.to;
+    if (previous.from === undefined) delete process.env.RESEND_FROM_EMAIL;
+    else process.env.RESEND_FROM_EMAIL = previous.from;
   }
 });

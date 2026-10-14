@@ -11,7 +11,6 @@ const fieldClass =
 
 type SubmissionStatus = "initial" | "sending" | "success" | "error";
 type Attendance = "" | "yes" | "no";
-type CodeStatus = "idle" | "checking" | "valid" | "invalid";
 
 function sanitizeName(value: string) {
   // Solo letras (incluye acentos/ñ), espacios y algunos signos típicos de nombres.
@@ -26,11 +25,6 @@ export default function RSVPForm() {
   const [attendance, setAttendance] = useState<Attendance>("");
   const [attendanceMenuOpen, setAttendanceMenuOpen] = useState(false);
   const [name, setName] = useState("");
-
-  const [code, setCode] = useState("");
-  const [codeStatus, setCodeStatus] = useState<CodeStatus>("idle");
-  const [codeError, setCodeError] = useState("");
-  const [reservedGuests, setReservedGuests] = useState<number | null>(null);
 
   useEffect(() => {
     function closeAttendanceMenu(event: MouseEvent) {
@@ -53,60 +47,9 @@ export default function RSVPForm() {
     setName(sanitizeName(event.target.value));
   }
 
-  function handleCodeChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setCode(event.target.value.replace(/\D/g, "").slice(0, 5));
-    if (codeStatus !== "idle") {
-      setCodeStatus("idle");
-      setCodeError("");
-      setReservedGuests(null);
-    }
-  }
-
-  async function verifyCode() {
-    if (code.length !== 5) {
-      setCodeStatus("invalid");
-      setCodeError("Ingresa un código de 5 dígitos.");
-      return;
-    }
-
-    setCodeStatus("checking");
-    setCodeError("");
-
-    try {
-      const response = await fetch("/api/verificar-codigo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setCodeStatus("invalid");
-        setCodeError(data?.message ?? "Código inválido.");
-        setReservedGuests(null);
-        return;
-      }
-
-      setReservedGuests(data.guests);
-      setCodeStatus("valid");
-    } catch {
-      setCodeStatus("invalid");
-      setCodeError("No pudimos verificar el código. Inténtalo nuevamente.");
-      setReservedGuests(null);
-    }
-  }
-
-  function resetCode() {
-    setCode("");
-    setCodeStatus("idle");
-    setCodeError("");
-    setReservedGuests(null);
-  }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submissionInProgress.current || codeStatus !== "valid") return;
+    if (submissionInProgress.current) return;
 
     submissionInProgress.current = true;
     setStatus("sending");
@@ -121,7 +64,6 @@ export default function RSVPForm() {
           name: formData.get("name"),
           message: formData.get("message"),
           website: formData.get("website"),
-          code: formData.get("code"),
         }),
       });
 
@@ -130,7 +72,6 @@ export default function RSVPForm() {
       formRef.current?.reset();
       setAttendance("");
       setName("");
-      resetCode();
       setStatus("success");
     } catch {
       setStatus("error");
@@ -199,235 +140,159 @@ export default function RSVPForm() {
                   />
                 </div>
 
-                {codeStatus === "valid" ? (
-                  <div>
-                    <input type="hidden" name="code" value={code} />
-                    <p className="text-sm font-medium">Lugares reservados</p>
-                    <p className="mt-2 text-3xl font-semibold text-wedding-beige sm:text-4xl">
-                      {reservedGuests}{" "}
-                      {reservedGuests === 1 ? "persona" : "personas"}
-                    </p>
-                  </div>
-                ) : (
+                <div className="space-y-6">
                   <div>
                     <label
-                      htmlFor="code"
+                      htmlFor="guestName"
                       className="text-sm font-medium"
                     >
-                      Código de invitación
+                      Nombre completo
                     </label>
-                    <div className="mt-2 flex gap-3">
-                      <input
-                        id="code"
-                        name="code"
-                        type="text"
-                        inputMode="numeric"
-                        pattern="\d{5}"
-                        maxLength={5}
-                        autoComplete="off"
+
+                    <input
+                      id="guestName"
+                      name="name"
+                      type="text"
+                      autoComplete="name"
+                      required
+                      minLength={2}
+                      maxLength={100}
+                      placeholder="Tu nombre completo"
+                      value={name}
+                      onChange={handleNameChange}
+                      className={fieldClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="attendance"
+                      className="text-sm font-medium"
+                    >
+                      ¿Asistirás?
+                    </label>
+
+                    <div ref={attendanceMenuRef} className="relative mt-2">
+                      <select
+                        name="attendance"
+                        value={attendance}
+                        onChange={handleAttendanceChange}
                         required
-                        value={code}
-                        onChange={handleCodeChange}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                            verifyCode();
-                          }
-                        }}
-                        placeholder="Ej. 12345"
-                        className={fieldClass}
-                      />
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        className="sr-only"
+                      >
+                        <option value="">Selecciona una respuesta</option>
+                        <option value="yes">Sí, asistiré</option>
+                        <option value="no">No podré asistir</option>
+                      </select>
 
                       <button
+                        id="attendance"
                         type="button"
-                        onClick={verifyCode}
-                        disabled={codeStatus === "checking"}
-                        className="mt-2 shrink-0 rounded-xl bg-wedding-terracotta px-5 py-3 text-sm font-semibold text-black transition hover:bg-wedding-beige disabled:opacity-60"
-                      >
-                        {codeStatus === "checking"
-                          ? "Verificando…"
-                          : "Verificar"}
-                      </button>
-                    </div>
-
-                    {codeStatus === "invalid" && codeError && (
-                      <p className="mt-2 text-xs text-red-200">
-                        {codeError}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <div
-                  className={`grid transition-[grid-template-rows,opacity,margin] duration-300 motion-reduce:transition-none ${
-                    codeStatus === "valid"
-                      ? "!mt-6 grid-rows-[1fr] opacity-100"
-                      : "!mt-0 grid-rows-[0fr] opacity-0"
-                  }`}
-                  aria-hidden={codeStatus !== "valid"}
-                  inert={codeStatus !== "valid" ? true : undefined}
-                >
-                  <div className="overflow-hidden space-y-6">
-                    <div>
-                      <label
-                        htmlFor="attendance"
-                        className="text-sm font-medium"
-                      >
-                        ¿Asistirás?
-                      </label>
-
-                      <div
-                        ref={attendanceMenuRef}
-                        className="relative mt-2"
-                      >
-                        <select
-                          name="attendance"
-                          value={attendance}
-                          onChange={handleAttendanceChange}
-                          required={codeStatus === "valid"}
-                          tabIndex={-1}
-                          aria-hidden="true"
-                          className="sr-only"
-                        >
-                          <option value="">
-                            Selecciona una respuesta
-                          </option>
-                          <option value="yes">Sí, asistiré</option>
-                          <option value="no">No podré asistir</option>
-                        </select>
-
-                        <button
-                          id="attendance"
-                          type="button"
-                          aria-haspopup="listbox"
-                          aria-expanded={attendanceMenuOpen}
-                          onClick={() =>
-                            setAttendanceMenuOpen((isOpen) => !isOpen)
+                        aria-haspopup="listbox"
+                        aria-expanded={attendanceMenuOpen}
+                        onClick={() =>
+                          setAttendanceMenuOpen((isOpen) => !isOpen)
+                        }
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") {
+                            setAttendanceMenuOpen(false);
                           }
-                          onKeyDown={(event) => {
-                            if (event.key === "Escape") {
-                              setAttendanceMenuOpen(false);
-                            }
 
-                            if (
-                              event.key === "ArrowDown" ||
-                              event.key === "ArrowUp"
-                            ) {
-                              event.preventDefault();
-                              setAttendanceMenuOpen(true);
-                            }
-                          }}
-                          className={`${fieldClass} flex cursor-pointer items-center justify-between text-left`}
+                          if (
+                            event.key === "ArrowDown" ||
+                            event.key === "ArrowUp"
+                          ) {
+                            event.preventDefault();
+                            setAttendanceMenuOpen(true);
+                          }
+                        }}
+                        className={`${fieldClass} flex cursor-pointer items-center justify-between text-left`}
+                      >
+                        <span>
+                          {attendance === "yes"
+                            ? "Sí, asistiré"
+                            : attendance === "no"
+                              ? "No podré asistir"
+                              : "Selecciona una respuesta"}
+                        </span>
+                        <span
+                          aria-hidden="true"
+                          className="ml-3 text-lg leading-none"
                         >
-                          <span>
-                            {attendance === "yes"
-                              ? "Sí, asistiré"
-                              : attendance === "no"
-                                ? "No podré asistir"
-                                : "Selecciona una respuesta"}
-                          </span>
-                          <span
-                            aria-hidden="true"
-                            className="ml-3 text-lg leading-none"
-                          >
-                            ⌄
-                          </span>
-                        </button>
+                          ⌄
+                        </span>
+                      </button>
 
-                        {attendanceMenuOpen && (
-                          <div
-                            role="listbox"
-                            aria-labelledby="attendance"
-                            className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-wedding-beige/60 bg-wedding-beige/95 py-1 text-wedding-brown shadow-xl backdrop-blur-sm"
-                          >
-                            {[
-                              ["yes", "Sí, asistiré"],
-                              ["no", "No podré asistir"],
-                            ].map(([value, label]) => (
-                              <button
-                                key={value}
-                                type="button"
-                                role="option"
-                                aria-selected={attendance === value}
-                                onClick={() => {
-                                  handleAttendanceChange({
-                                    target: { value },
-                                  } as React.ChangeEvent<HTMLSelectElement>);
-                                  setAttendanceMenuOpen(false);
-                                }}
-                                className="block w-full px-4 py-3 text-left transition-colors hover:bg-wedding-terracotta hover:text-wedding-beige focus:bg-wedding-terracotta focus:text-wedding-beige focus:outline-none"
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      {attendanceMenuOpen && (
+                        <div
+                          role="listbox"
+                          aria-labelledby="attendance"
+                          className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-wedding-beige/60 bg-wedding-beige/95 py-1 text-wedding-brown shadow-xl backdrop-blur-sm"
+                        >
+                          {[
+                            ["yes", "Sí, asistiré"],
+                            ["no", "No podré asistir"],
+                          ].map(([value, label]) => (
+                            <button
+                              key={value}
+                              type="button"
+                              role="option"
+                              aria-selected={attendance === value}
+                              onClick={() => {
+                                handleAttendanceChange({
+                                  target: { value },
+                                } as React.ChangeEvent<HTMLSelectElement>);
+                                setAttendanceMenuOpen(false);
+                              }}
+                              className="block w-full px-4 py-3 text-left transition-colors hover:bg-wedding-terracotta hover:text-wedding-beige focus:bg-wedding-terracotta focus:text-wedding-beige focus:outline-none"
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-
-                    <div>
-                      <label
-                        htmlFor="guestName"
-                        className="text-sm font-medium"
-                      >
-                        Nombre completo
-                      </label>
-
-                      <input
-                        id="guestName"
-                        name="name"
-                        type="text"
-                        autoComplete="name"
-                        required={codeStatus === "valid"}
-                        minLength={2}
-                        maxLength={100}
-                        placeholder="Tu nombre completo"
-                        value={name}
-                        onChange={handleNameChange}
-                        className={fieldClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="message"
-                        className="text-sm font-medium"
-                      >
-                        Mensaje para los novios
-                      </label>
-
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={4}
-                        maxLength={500}
-                        placeholder={`Escribe unas palabras para ${wedding.couple.displayName}`}
-                        className={`${fieldClass} resize-y`}
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={
-                        status === "sending" || codeStatus !== "valid"
-                      }
-                      className="w-full rounded-full bg-wedding-terracotta px-7 py-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-black transition hover:bg-wedding-beige hover:text-wedding-brown focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-wedding-beige disabled:opacity-60"
-                      aria-describedby="form-status"
-                    >
-                      {status === "sending"
-                        ? "Enviando confirmación…"
-                        : "Confirmar asistencia"}
-                    </button>
-
-                    <p
-                      id="form-status"
-                      className="text-center text-xs text-white/55"
-                      aria-live="polite"
-                      aria-atomic="true"
-                    >
-                      {statusMessage}
-                    </p>
                   </div>
+
+                  <div>
+                    <label
+                      htmlFor="message"
+                      className="text-sm font-medium"
+                    >
+                      Mensaje para los novios
+                    </label>
+
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows={4}
+                      maxLength={500}
+                      placeholder={`Escribe unas palabras para ${wedding.couple.displayName}`}
+                      className={`${fieldClass} resize-y`}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={status === "sending"}
+                    className="w-full rounded-full bg-wedding-terracotta px-7 py-3.5 text-sm font-semibold uppercase tracking-[0.12em] text-black transition hover:bg-wedding-beige hover:text-wedding-brown focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-wedding-beige disabled:opacity-60"
+                    aria-describedby="form-status"
+                  >
+                    {status === "sending"
+                      ? "Enviando confirmación…"
+                      : "Confirmar asistencia"}
+                  </button>
+
+                  <p
+                    id="form-status"
+                    className="text-center text-xs text-white/55"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {statusMessage}
+                  </p>
                 </div>
               </>
             )}

@@ -3,8 +3,6 @@ import { FieldValue } from "firebase-admin/firestore";
 import {
   MAX_RSVP_BODY_BYTES,
   escapeHtml,
-  getGuestsForCode,
-  guestCountContent,
   rsvpSchema,
 } from "../../../lib/rsvp.ts";
 import { getAdminFirestore } from "../../../lib/firebase-admin.ts";
@@ -50,12 +48,6 @@ export async function POST(request: Request) {
     return json("Confirmación recibida correctamente.", 200);
   }
 
-  const capacity = getGuestsForCode(confirmation.code);
-  if (capacity === null) {
-    return json("Código de invitación inválido.", 400);
-  }
-  const guests = confirmation.attendance === "yes" ? capacity : 0;
-
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.RSVP_TO_EMAIL;
   const from = process.env.RESEND_FROM_EMAIL;
@@ -69,9 +61,7 @@ export async function POST(request: Request) {
     const db = getAdminFirestore();
     confirmationReference = await db.collection("confirmaciones").add({
       nombre: confirmation.name,
-      codigo: confirmation.code,
       asistencia: confirmation.attendance === "yes",
-      cantidadPersonas: guests,
       mensaje: confirmation.message || "",
       fechaConfirmacion: FieldValue.serverTimestamp(),
       correoEnviado: false,
@@ -92,8 +82,6 @@ export async function POST(request: Request) {
     /\r?\n/g,
     "<br>",
   );
-  const guestCount = guestCountContent(confirmation.attendance, guests);
-
   try {
     const resend = new Resend(apiKey);
     const { data, error } = await resend.emails.send({
@@ -113,7 +101,6 @@ export async function POST(request: Request) {
           <tr><td style="padding:30px">
             <p style="margin:0 0 18px"><strong>Invitado:</strong> ${safeName}</p>
             <p style="margin:0 0 18px"><strong>Asistencia:</strong> ${attendanceLabel}</p>
-            ${guestCount.html}
             <p style="margin:0 0 8px"><strong>Mensaje:</strong></p>
             <p style="margin:0 0 24px;line-height:1.6;color:#5f3025">${safeMessage}</p>
             <p style="margin:0;font-size:12px;color:#7d625b">Recibida el ${escapeHtml(receivedAt)} (America/El_Salvador)</p>
@@ -127,7 +114,6 @@ export async function POST(request: Request) {
         "Nueva confirmación de boda",
         `Invitado: ${confirmation.name}`,
         `Asistencia: ${attendanceLabel}`,
-        guestCount.text,
         `Mensaje: ${confirmation.message || "Sin mensaje"}`,
         `Recibida el ${receivedAt} (America/El_Salvador)`,
       ].join("\n"),

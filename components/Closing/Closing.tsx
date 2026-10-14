@@ -22,7 +22,7 @@ export default function Closing() {
       <blockquote className="mx-auto mt-9 max-w-xl font-serif text-xl italic leading-8 text-wedding-brown/80">
         «Gracias por ser parte de esta historia.
         <br />
-        Su presencia es el regalo más grande que podríamos recibir.»
+        Si desean hacernos un regalo, agradeceremos que sea en sobre.»
       </blockquote>
       </RevealOnScroll>
       <RevealOnScroll delay={0.3}>
