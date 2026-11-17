@@ -17,7 +17,9 @@ npm run dev
 
 ## Confirmaciones de asistencia
 
-El formulario envía las confirmaciones mediante `/api/confirmacion` y Resend.
+El formulario solicita nombre, asistencia y un mensaje opcional para los novios.
+Las confirmaciones se envían mediante `/api/confirmacion` y Resend; no se
+requiere un código de invitación.
 Copia `.env.example` como `.env.local` y configura:
 
 - `RESEND_API_KEY`: API key de Resend; nunca debe llevar `NEXT_PUBLIC_`.

@@ -12,21 +12,18 @@ export default function Hero() {
       <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/85 via-wedding-brown/30 to-black/10 sm:bg-gradient-to-r sm:from-black/80 sm:via-wedding-brown/30 sm:to-transparent" />
       <div className="relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl items-end px-6 pb-16 pt-36 sm:items-center sm:px-10 sm:py-28 lg:px-16">
         <RevealOnScroll className="max-w-md text-center sm:text-left">
-          <p className="text-xs font-medium uppercase tracking-[0.3em] text-wedding-beige sm:text-sm">
-            {wedding.hero.invitation}
-          </p>
-          <h1 className="font-display mt-5 text-6xl leading-[0.82] sm:text-7xl lg:text-8xl">
+          <h1 className="font-display mb-5 text-6xl leading-[0.82] sm:text-7xl lg:text-8xl">
             {wedding.couple.firstName}
             <span className="block py-2 text-4xl italic text-wedding-terracotta sm:text-5xl">
               &amp;
             </span>
             {wedding.couple.secondName}
           </h1>
-          <p className="mt-7 text-sm uppercase tracking-[0.22em] text-white/90 sm:text-base">
-            {wedding.date.display} · {wedding.date.time}
-          </p>
           <p className="mx-auto mt-5 max-w-md font-serif text-lg italic leading-7 text-white/80 sm:mx-0">
             “{wedding.hero.quote}”
+          </p>
+          <p className="mt-7 text-sm uppercase tracking-[0.22em] text-white/90 sm:text-base">
+            {wedding.date.display} · {wedding.date.time}
           </p>
           <a
             href="#confirmar"

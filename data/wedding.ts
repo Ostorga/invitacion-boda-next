@@ -21,20 +21,20 @@ export const wedding = {
   date: {
     iso: "2026-12-19",
     dateTimeIso: "2026-12-19T16:00:00-06:00",
-    display: "sábado 19 de diciembre de 2026",
+    display: "sábado 19 de diciembre, 2026",
     time: "4:00 p. m.",
     roman: "XIX · XII · MMXXVI",
     timeZone: "America/El_Salvador",
   },
   rsvp: {
     deadlineIso: "2026-11-15",
-    deadlineDisplay: "15 de noviembre de 2026",
+    deadlineDisplay: "5 de diciembre de 2026",
     futureEndpoint: "/api/rsvp",
   },
   hero: {
     image: "/images/hero.webp",
     invitation: "Tienen el honor de invitarles a la celebración de su matrimonio",
-    quote: "Dos almas que se reconocen en la eternidad y deciden caminar juntas hacia ella.",
+    quote: " Tienen el honor de invitarles a la celebración de su matrimonio.",
   },
   navigation: [
     { label: "Historia", href: "#historia" },

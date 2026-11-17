@@ -11,12 +11,8 @@ export default function Gallery() {
       <div className="mx-auto max-w-6xl">
         <RevealOnScroll>
         <header className="text-center">
-          <p className="eyebrow">Momentos nuestros</p>
+          <p className="eyebrow">Futura familia Cartagena Castillo.</p>
           <h2 className="section-title">Galería</h2>
-          <p className="mx-auto mt-4 max-w-xl text-wedding-brown/80">
-            Muy pronto compartiremos aquí algunos de nuestros recuerdos
-            favoritos.
-          </p>
         </header>
         </RevealOnScroll>
         <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

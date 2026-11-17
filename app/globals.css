@@ -119,6 +119,28 @@ select option:checked {
   object-fit: cover;
 }
 
+.monogram-image-frame {
+  position: relative;
+}
+
+.monogram-image-frame::after {
+  position: absolute;
+  inset: 0;
+  background: var(--wedding-beige);
+  content: "";
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(
+    ellipse 50% 50% at center,
+    transparent 70%,
+    #000 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 50% 50% at center,
+    transparent 70%,
+    #000 100%
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal-on-scroll-pending,

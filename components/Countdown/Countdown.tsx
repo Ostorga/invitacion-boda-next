@@ -59,7 +59,6 @@ export default function Countdown() {
         aria-labelledby="countdown-title"
       >
       <RevealOnScroll>
-      <p className="eyebrow !text-wedding-beige">El gran día se acerca</p>
       <h2 id="countdown-title" className="section-title !text-white">
         Faltan...
       </h2>

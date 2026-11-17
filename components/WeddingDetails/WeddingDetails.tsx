@@ -10,11 +10,8 @@ export default function WeddingDetails() {
       <div className="mx-auto max-w-5xl">
         <RevealOnScroll>
         <header className="text-center">
-          <p className="eyebrow">Los esperamos</p>
-          <h2 className="section-title">El gran día</h2>
-          <p className="mt-4 text-wedding-brown/80">
-            Un momento único para celebrar juntos.
-          </p>
+          <p className="eyebrow">Te esperamos en </p>
+          <h2 className="section-title">EL GRAN DÍA</h2>
         </header>
         </RevealOnScroll>
         <div className="mt-12 flex justify-center">
@@ -35,7 +32,6 @@ export default function WeddingDetails() {
                   ["Lugar", event.place],
                   ["Fecha", wedding.date.display],
                   ["Hora", event.time],
-                  ["Dirección", event.address],
                 ].map(([label, value]) => (
                   <div
                     key={label}
@@ -51,26 +47,6 @@ export default function WeddingDetails() {
               <p className="mt-7 rounded-full bg-wedding-beige px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-wedding-brown">
                 {event.dressCode}
               </p>
-              <div className="mt-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-wedding-brown/80">
-                  Colores de vestimenta a evitar.
-                </p>
-                <ul
-                  className="mt-3 flex items-center justify-center gap-4"
-                  aria-label="Paleta de vestimenta sugerida"
-                >
-                  {wedding.dressPalette.map((color) => (
-                    <li key={color.name}>
-                      <span
-                        className={`block h-9 w-9 rounded-full border border-wedding-brown/35 ${color.className}`}
-                        title={color.name}
-                        aria-label={color.name}
-                        role="img"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </article>
             </RevealOnScroll>
           ))}
